@@ -16,15 +16,16 @@
 typedef int RET;
 
 enum RETURN_CODE {
-    RET_SIG_SPECIAL     = 2,
+    RET_SIG_EOF         = 2,
     RET_SIG_EXIT        = 1,
     RET_OK              = 0,
     RET_WRONG_PARAM     = -1,
     RET_ACTION_FAIL     = -2,
-    RET_WRONG_PTR       = -3,
-    RET_WRONG_VAL       = -4,
-    RET_WRONG_FLOW      = -5,
-    RET_CLBCK_FAIL      = -6
+    RET_MEM_VIOLATION   = -3,
+    RET_WRONG_PTR       = -4,
+    RET_WRONG_VAL       = -5,
+    RET_WRONG_FLOW      = -6,
+    RET_CLBCK_FAIL      = -7
 };
 
 /********************************

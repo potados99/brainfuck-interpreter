@@ -10,13 +10,13 @@
 
 RET bf_run(const char * source, int length, int verbose) {
     static unsigned char mem[256] = {0, };
-    
-    char * ip = (char *)source;     /* instruction pointer */
-    unsigned char * ar = mem;       /* address register */
+    static unsigned char * ar = mem;        /* address register */
+    static long temp_ar = 0;
+
+    char * ip = (char *)source;             /* instruction pointer */
+    long temp_ip = 0;
 
     unsigned long depth = 0;
-    long temp_ip = 0;
-    long temp_ar = 0;
     
     while (ip - source < length) {
         
@@ -25,13 +25,21 @@ RET bf_run(const char * source, int length, int verbose) {
         
         switch (*ip) {
             case '>':
+                if (temp_ar == sizeof(mem) - 1)
+                    error(RET_MEM_VIOLATION, "access denied at %ld.", temp_ar + 1);
+                
                 ++ar;
+                
                 if (verbose)
                     instruction("<+%ld>:\tADD\tar, 1\t\t(%ld)\n", temp_ip, temp_ar + 1);
                 break;
                 
             case '<':
+                if (temp_ar == 0)
+                    error(RET_MEM_VIOLATION, "access denied at %ld.", temp_ar - 1);
+                
                 --ar;
+                
                 if (verbose)
                     instruction("<+%ld>:\tADD\tar, -1\t\t(%ld)\n", temp_ip, temp_ar - 1);
                 break;
@@ -71,7 +79,11 @@ RET bf_run(const char * source, int length, int verbose) {
                 depth = 1;
                 
                 while (depth) {
+                    if (ip - source == length)
+                        error(RET_ACTION_FAIL, "expected ].");
+                    
                     ++ip;
+                    
                     if (*ip == ']') --depth;
                     else if (*ip == '[') ++depth;
                 }
@@ -86,11 +98,15 @@ RET bf_run(const char * source, int length, int verbose) {
                         instruction("<+%ld>:\tNOP\n", temp_ip);
                     break;
                 }
-                
 
                 depth = 1;
+                
                 while (depth) {
+                    if (ip - source == 0)
+                        error(RET_ACTION_FAIL, "expected [.");
+                    
                     --ip;
+
                     if (*ip == '[') --depth;
                     else if (*ip == ']') ++depth;
                 }

@@ -19,7 +19,6 @@ typedef int (*str_callback)(const char *, int);
 
 /**
  * Handle user input from stream and launch callback.
- * Optimized for terminal input, line by line. (use fgets.)
  *
  * @param stream        Input stream.
  * @param delim         Read until this character. (not included.)
