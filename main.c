@@ -49,6 +49,10 @@ int main_terminal(int argc, const char * argv[]) {
         if (result < 0) {
             error(RET_ACTION_FAIL, "io_for_input failed.");
         }
+        else if (result > 0) {
+            puts("");
+            return RET_OK;
+        }
         else {
             printf("\n>> ");
             continue;
