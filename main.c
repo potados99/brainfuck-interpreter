@@ -12,69 +12,84 @@
 #include <unistd.h>
 
 #include "bf.h"
+#include "io.h"
 
 const char * hello_world = "+[-[<<[+[--->]-[<<<]]]>>>-]>-.---.>..>.<<<<-.<+.>>>>>.>.<<.<-.";
 
-int main(int argc, const char * argv[]) {
-    if (argc > 1) {
-        // file argument
-        bf_run_file(argv[1]);
-        
-        return 0;
+int interpret_brainfuck(const char * source, int len) {
+    printf("\nSTART\n%s\nEND(%d)\n", source, len);
+    return 0;
+}
+
+int main_file(int argc, const char * argv[]) {
+    int result = io_for_file(argv[1], interpret_brainfuck);
+    
+    if (result < 0) {
+        // error.
+        error(RET_ACTION_FAIL, "io_for_file failed.");
     }
-    
-    int terminal = isatty(fileno(stdin));
-    
-    char buf[512] = {0, };
-    int str_len = 0;
-    
-    // redirection or pipe
-    if (! terminal) {
-        char combined[1024] = {0, };
-        
-        while(fgets(buf, sizeof(buf) - 1, stdin)) {
-            strcat(combined, buf);
-        }
-        
-        str_len = (int)strlen(combined);
-        combined[str_len - 1] = '\0'; /* last character. */
-
-        bf_run(combined, str_len, 0);
-        
-        return 0;
+    else if (result > 0) {
+        // signal.
+        return RET_SIG_EXIT;
     }
-
-    printf("Brainfuck interpreter v0.0.1\n");
-    printf("Copyright 2019 Potados.\n");
-    
-    // terminal
-    while(1) {
-        rewind(stdin);
-        
-        printf("\n>>> ");
-        if (fgets(buf, sizeof(buf) - 1, stdin) == NULL) {
-            printf("fgets error.\n");
-            continue;
-        }
-        
-        rewind(stdin);
-        
-        str_len = (int)strlen(buf);
-        
-        if (str_len == 1) {
-            printf("parse error.\n");
-            continue;;
-        }
-        
-        buf[str_len - 1] = '\0'; /* last character. */
-
-        if (strcmp(buf, "q") == 0 || strcmp(buf, "quit") == 0) {
-            return 0;
-        }
-        
-        bf_run(buf, str_len, 0);
+    else {
+        // ok.
+        return RET_OK;
     }
     
     return 0;
+}
+
+int main_terminal(int argc, const char * argv[]) {
+    printf("Brainfuck interpreter v0.0.1\n");
+    printf("Copyright 2019 Potados.\n");
+    
+    printf("\n>> ");
+    
+    int result = 0;
+    
+    for(;;) {
+        result = io_for_input(stdin, '\n', 'q', interpret_brainfuck);
+         
+        if (result < 0) {
+            // error.
+            error(RET_ACTION_FAIL, "io_for_input failed.");
+        }
+        else if (result > 0) {
+            // signal.
+            return RET_SIG_EXIT;
+        }
+        else {
+            // ok.
+            printf("\n>> ");
+            continue;
+        }
+    }
+}
+
+int main_redirection(int argc, const char *argv[]) {
+    int result = io_for_input(stdin, EOF, 0, interpret_brainfuck);
+    
+    if (result < 0) {
+        // error.
+        error(RET_ACTION_FAIL, "io_for_input failed.");
+    }
+    else if (result > 0) {
+        // signal.
+        return RET_SIG_EXIT;
+    }
+    else {
+        // ok.
+        return RET_OK;
+    }
+}
+
+int main(int argc, const char * argv[]) {
+    if (argc > 1)
+        return main_file(argc, argv);
+    else if (isatty(fileno(stdin)))
+        return main_terminal(argc, argv);
+    else
+        return main_redirection(argc, argv);
 }
 

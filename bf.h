@@ -13,9 +13,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "io.h"
+
 #define instruction(_fmt, ...) printf(_fmt, ##__VA_ARGS__)
 
-void bf_run(const char * source, int length, int verbose);
-void bf_run_file(const char * filename);
+RET bf_run(const char * source, int length, int verbose);
 
 #endif /* bf_h */
