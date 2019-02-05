@@ -8,19 +8,19 @@
 
 #include "bf.h"
 
-void bf_run(const char * file, int size, int verbose) {
+void bf_run(const char * source, int length, int verbose) {
     unsigned char mem[256] = {0, };
     
-    char * ip = (char *)file;   /* instruction pointer */
-    unsigned char * ar = mem;   /* address register */
+    char * ip = (char *)source;     /* instruction pointer */
+    unsigned char * ar = mem;       /* address register */
 
     unsigned long depth = 0;
     long temp_ip = 0;
     long temp_ar = 0;
     
-    while (ip - file < size) {
+    while (ip - source < length) {
         
-        temp_ip = ip - file;
+        temp_ip = ip - source;
         temp_ar = ar - mem;
         
         switch (*ip) {
@@ -53,7 +53,7 @@ void bf_run(const char * file, int size, int verbose) {
                     instruction("<+%ld>:\tPRT\t*(ar+%ld)\t\t(%d:%c)\n",
                                 temp_ip, temp_ar, *ar, *ar);
                 else
-                    printf("%c", *ar);
+                    putc(*ar, stdout);
 
                 break;
                 
@@ -76,7 +76,7 @@ void bf_run(const char * file, int size, int verbose) {
                     else if (*ip == '[') ++depth;
                 }
                 if (verbose)
-                    instruction("<+%ld>:\tJMP\t\t\t\t<+%ld>\n", temp_ip, ip - file);
+                    instruction("<+%ld>:\tJMP\t\t\t\t<+%ld>\n", temp_ip, ip - source);
 
                 continue;
                 
@@ -95,7 +95,7 @@ void bf_run(const char * file, int size, int verbose) {
                     else if (*ip == ']') ++depth;
                 }
                 if (verbose)
-                    instruction("<+%ld>:\tJMP\t\t\t\t<+%ld>\n", temp_ip, ip - file);
+                    instruction("<+%ld>:\tJMP\t\t\t\t<+%ld>\n", temp_ip, ip - source);
 
                 continue;
 
@@ -106,4 +106,49 @@ void bf_run(const char * file, int size, int verbose) {
         
         ++ip;
     }
+}
+
+void bf_run_file(const char * filename) {
+    FILE *file;
+    long size;
+    size_t result;
+    char * buf;
+    
+    file = fopen(filename, "rt");
+    if (file == NULL) {
+        puts("file open error.");
+        
+        return;
+    }
+    
+    fseek(file, 0, SEEK_END);
+    size = ftell(file);
+    rewind(file);
+    
+    buf = (char *)malloc(sizeof(char) * size + 1);
+    if (buf == NULL) {
+        fclose(file);
+        puts("memory allocation error.");
+        
+        return;
+    }
+    
+    memset(buf, 0, sizeof(char) * size + 1);
+    
+    result = fread(buf, 1, size, file);
+    if (result == 0) {
+        fclose(file);
+        free(buf);
+        
+        return;
+    }
+    buf[result] = '\0';
+    
+    fclose(file);
+    
+    // printf("content: %s\n", buf);
+    
+    bf_run(buf, (int)strlen(buf), 0);
+    
+    free(buf);
 }

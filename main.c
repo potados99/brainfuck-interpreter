@@ -17,20 +17,29 @@ const char * hello_world = "+[-[<<[+[--->]-[<<<]]]>>>-]>-.---.>..>.<<<<-.<+.>>>>
 
 int main(int argc, const char * argv[]) {
     if (argc > 1) {
-        bf_run(argv[1], (int)strlen(argv[1]), 0);
+        // file argument
+        bf_run_file(argv[1]);
+        
         return 0;
     }
+    
+    int terminal = isatty(fileno(stdin));
     
     char buf[512] = {0, };
     int str_len = 0;
     
-    if (!isatty(fileno(stdin))) {
-        fgets(buf, sizeof(buf) - 1, stdin);
-        str_len = (int)strlen(buf);
+    // redirection or pipe
+    if (! terminal) {
+        char combined[1024] = {0, };
+        
+        while(fgets(buf, sizeof(buf) - 1, stdin)) {
+            strcat(combined, buf);
+        }
+        
+        str_len = (int)strlen(combined);
+        combined[str_len - 1] = '\0'; /* last character. */
 
-        buf[str_len - 1] = '\0'; /* last character. */
-
-        bf_run(buf, str_len, 0);
+        bf_run(combined, str_len, 0);
         
         return 0;
     }
@@ -38,6 +47,7 @@ int main(int argc, const char * argv[]) {
     printf("Brainfuck interpreter v0.0.1\n");
     printf("Copyright 2019 Potados.\n");
     
+    // terminal
     while(1) {
         rewind(stdin);
         
