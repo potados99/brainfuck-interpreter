@@ -9,7 +9,7 @@
 #include "bf.h"
 
 void bf_run(const char * source, int length, int verbose) {
-    unsigned char mem[256] = {0, };
+    static unsigned char mem[256] = {0, };
     
     char * ip = (char *)source;     /* instruction pointer */
     unsigned char * ar = mem;       /* address register */
