@@ -12,7 +12,6 @@
 #include <unistd.h>
 
 #include "bf.h"
-#include "io.h"
 
 const char * hello_world = "+[-[<<[+[--->]-[<<<]]]>>>-]>-.---.>..>.<<<<-.<+.>>>>>.>.<<.<-.";
 
@@ -21,7 +20,7 @@ int interpret_brainfuck(const char * source, int len) {
 }
 
 int main_file(int argc, const char * argv[]) {
-    int result = io_for_file(argv[1], interpret_brainfuck);
+    int result = p_with_file(argv[1], interpret_brainfuck);
     
     if (result < 0) {
         // error.
@@ -44,7 +43,7 @@ int main_terminal(int argc, const char * argv[]) {
     int result = 0;
     
     for(;;) {
-        result = io_for_input(stdin, '\n', 'q', interpret_brainfuck);
+        result = p_with_input(stdin, 128, '\n', 'q', 1, interpret_brainfuck);
          
         if (result < 0) {
             error(RET_ACTION_FAIL, "io_for_input failed.");
@@ -61,7 +60,7 @@ int main_terminal(int argc, const char * argv[]) {
 }
 
 int main_redirection(int argc, const char *argv[]) {
-    int result = io_for_input(stdin, EOF, 0, interpret_brainfuck);
+    int result = p_with_input(stdin, 1024, EOF, 0, 0, interpret_brainfuck);
     
     if (result < 0) {
         // error.

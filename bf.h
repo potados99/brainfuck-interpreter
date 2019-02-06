@@ -13,7 +13,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "io.h"
+#include <pio.h>
+#include <pdbg.h>
 
 #define instruction(_fmt, ...) printf(_fmt, ##__VA_ARGS__)
 
