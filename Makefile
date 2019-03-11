@@ -3,13 +3,13 @@
 TARGET = bf-run
 
 CC = gcc
-CFLAGS = -Wall
+LFLAGS = -L/usr/local/lib -lpotados
 
 SOURCE = $(wildcard *.c)
 OBJECT = $(SOURCE:.c=.o)
 
 $(TARGET): $(OBJECT)
-	$(LINK.c) -o $@ $^
+	$(LINK.c) -o $@ $^ $(LFLAGS)
 
 # Object file wildcard rule.
 %.o: %.c
