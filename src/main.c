@@ -12,26 +12,24 @@
 #include <unistd.h>
 
 #include "bf.h"
+#include "io.h"
 
 const char * hello_world = "+[-[<<[+[--->]-[<<<]]]>>>-]>-.---.>..>.<<<<-.<+.>>>>>.>.<<.<-.";
 
-int interpret_brainfuck(const char * source, int len) {
-    return bf_run(source, len, 0);
+int interpret_brainfuck(const char *source, int len) {
+    struct bf_context context = {
+        .src = source,
+        .src_len = len,
+        .mem = {0, },
+        .data_ptr = context.mem,
+        .inst_ptr = context.src
+    };
+    
+    return bf_run(&context);
 }
 
 int main_file(int argc, const char * argv[]) {
-    int result = p_with_file(argv[1], interpret_brainfuck);
-    
-    if (result < 0) {
-        // error.
-        error(RET_ACTION_FAIL, "io_for_file failed.");
-    }
-    else {
-        // ok.
-        return RET_OK;
-    }
-    
-    return 0;
+    return io_with_file(argv[1], interpret_brainfuck);
 }
 
 int main_terminal(int argc, const char * argv[]) {
@@ -43,33 +41,20 @@ int main_terminal(int argc, const char * argv[]) {
     int result = 0;
     
     for(;;) {
-        result = p_with_input(stdin, 128, '\n', 'q', 1, interpret_brainfuck);
-         
-        if (result < 0) {
-            error(RET_ACTION_FAIL, "io_for_input failed.");
-        }
-        else if (result > 0) {
-            puts("");
-            return RET_OK;
-        }
-        else {
+        result = io_with_input(stdin, 128, '\n', 'q', 1, interpret_brainfuck);
+        
+        if (result == 0) {
             printf("\n>> ");
             continue;
+        } else {
+            puts("");
+            return 0;
         }
     }
 }
 
 int main_redirection(int argc, const char *argv[]) {
-    int result = p_with_input(stdin, 1024, EOF, 0, 0, interpret_brainfuck);
-    
-    if (result < 0) {
-        // error.
-        error(RET_ACTION_FAIL, "io_for_input failed.");
-    }
-    else {
-        // ok.
-        return RET_OK;
-    }
+    return io_with_input(stdin, 1024, EOF, 0, 0, interpret_brainfuck);
 }
 
 int main(int argc, const char * argv[]) {
@@ -80,4 +65,6 @@ int main(int argc, const char * argv[]) {
     else
         return main_redirection(argc, argv);
 }
+
+
 

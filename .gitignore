@@ -1,2 +1,4 @@
-*.o
-bf-run
+build
+brainfuck
+.DS_Store
+
